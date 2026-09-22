@@ -18,7 +18,7 @@ class ZenlenetConfig(PluginConfig):
         from netbox.navigation import menu as menu_mod
         from utilities.templatetags import navigation as nav_tags
 
-        hidden = {
+        hidden = [
             menu
             for menu in (
                 getattr(menu_mod, 'RACKS_MENU', None),
@@ -33,11 +33,11 @@ class ZenlenetConfig(PluginConfig):
                 getattr(menu_mod, 'CUSTOMIZATION_MENU', None),
             )
             if menu is not None
-        }
+        ]
         original = menu_mod.get_menus.__wrapped__
 
         def trimmed():
-            return [item for item in original() if item not in hidden]
+            return [item for item in original() if all(item is not menu for menu in hidden)]
 
         if hasattr(menu_mod.get_menus, 'cache_clear'):
             menu_mod.get_menus.cache_clear()
