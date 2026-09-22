@@ -17,8 +17,8 @@
     <tr><th>地区</th><th>网段</th><th>供应商</th><th>总数</th><th>已分配</th><th>未分配</th></tr>
     {% for row in rows %}
     <tr>
-      <td>{{ row.pop }}</td>
-      <td><a href="/resources?q={{ row.prefix.split('/')[0] }}&pop={{ row.pop }}">{{ row.prefix }}</a></td>
+      <td>{{ row["pop"] }}</td>
+      <td><a href="/resources?q={{ row["prefix"].split('/')[0] }}&pop={{ row["pop"] }}">{{ row["prefix"] }}</a></td>
       <td>{{ row.supplier }}</td>
       <td>{{ row.total }}</td>
       <td>{{ row.allocated }}</td>

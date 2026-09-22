@@ -20,7 +20,7 @@
     <div class="panel">
       {% for item in pop_bars %}
       <div class="pop-row">
-        <span>{{ item.pop }}</span>
+        <span>{{ item["pop"] }}</span>
         <div class="bar"><span style="width: {{ item.pct }}%"></span></div>
         <span class="muted">{{ item.pct }}%</span>
       </div>
