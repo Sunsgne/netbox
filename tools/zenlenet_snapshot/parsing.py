@@ -337,6 +337,28 @@ def decide_status(kind: str, raw_label: str, remark: str, rgb: str, today: date 
     return "free", expiry
 
 
+def ai_status(recovered, kind_text) -> str:
+    """Status for the AI resale sheet. The credential column is not an input."""
+    blob = f"{first_line(recovered)} {first_line(kind_text)}"
+    if "回收" in blob or "退" in blob:
+        return "terminated"
+    if "测试" in blob:
+        return "testing"
+    return "active"
+
+
+def ai_note_from_row(values) -> str:
+    """Public commercial fields only. Column 4 holds account secrets and is ignored."""
+    values = list(values) + [None] * 10
+    return clean_remark(
+        f"平台 {first_line(values[1])}" if first_line(values[1]) else "",
+        f"方式 {first_line(values[3])}" if first_line(values[3]) else "",
+        f"额度 {first_line(values[5])}" if first_line(values[5]) else "",
+        f"折扣 {first_line(values[6])}" if first_line(values[6]) else "",
+        first_line(values[9]),
+    )
+
+
 def product_of(type_text: str, default: str) -> str:
     text = (type_text or "").upper()
     if "SDWAN" in text or "SD-WAN" in text:

@@ -37,6 +37,8 @@ from zenlenet_snapshot.parsing import (
     parse_bandwidth,
     parse_dates,
     parse_expiry,
+    ai_note_from_row,
+    ai_status,
     product_of,
     role_from_header,
 )
@@ -766,6 +768,86 @@ def _seed_tickets(session) -> int:
         start += timedelta(days=1)
         end += timedelta(days=1)
     return created
+
+
+def _orders_from_server_off(ws, session, customers) -> int:
+    if ws is None:
+        return 0
+    count = 0
+    last = ""
+    for row in _rows(ws):
+        values = list(row) + [None] * 14
+        if first_line(values[0]).lower() == "customer":
+            continue
+        if first_line(values[0]):
+            last = first_line(values[0])
+        kind, cname = classify_customer(last)
+        if kind != "customer":
+            continue
+        if not any((values[2], values[6], values[8])):
+            continue
+        ended = parse_dates(values[12])
+        if _add_order(
+            session,
+            customers,
+            customer_name=cname,
+            product=product_of(first_line(values[1]), "VM"),
+            status="terminated",
+            country=first_line(values[2])[:80],
+            pop_code=first_line(values[2])[:80],
+            bandwidth_text=first_line(values[3])[:80],
+            bw_mbps=parse_bandwidth(values[3]),
+            spec=first_line(values[6])[:80],
+            ip_text=_text(values[8]),
+            supplier_name=first_line(values[10])[:80],
+            ended_on=ended[-1] if ended else None,
+            source="server-off",
+        ):
+            count += 1
+    return count
+
+
+def _orders_from_ai(ws, session, customers) -> int:
+    if ws is None:
+        return 0
+    count = 0
+    for row in _rows(ws)[1:]:
+        values = list(row) + [None] * 10
+        kind, cname = classify_customer(values[0])
+        if kind != "customer":
+            continue
+        started = parse_dates(values[7])
+        if _add_order(
+            session,
+            customers,
+            customer_name=cname,
+            product="转售",
+            status=ai_status(values[8], values[9]),
+            spec=first_line(values[1])[:80],
+            note=ai_note_from_row(values),
+            started_on=started[-1] if started else None,
+            source="ai",
+        ):
+            count += 1
+    return count
+
+
+def append_workbook_gaps(company_path: str) -> dict:
+    """Add churned cloud servers and AI resale orders without rewriting IP inventory."""
+    with SessionLocal() as session:
+        session.execute(delete(ServiceOrder).where(ServiceOrder.source.in_(("server-off", "ai"))))
+        session.flush()
+        customers = {row.name: row for row in session.scalars(select(Customer))}
+        workbook = openpyxl.load_workbook(company_path, data_only=True)
+        try:
+            sheets = {name.strip(): workbook[name] for name in workbook.sheetnames}
+            removed = _orders_from_server_off(sheets.get("Server客户退租"), session, customers)
+            resale = _orders_from_ai(sheets.get("AI Agent转售客户"), session, customers)
+        finally:
+            workbook.close()
+        _refresh_customers(session)
+        session.commit()
+    return {"server_off": removed, "ai": resale}
 
 
 def main() -> None:

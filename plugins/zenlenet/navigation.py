@@ -1,14 +1,2 @@
-from netbox.plugins import PluginMenu, PluginMenuItem
-
-menu = PluginMenu(
-    label='ZENLENET',
-    icon_class='mdi mdi-briefcase-outline',
-    groups=(
-        ('Odoo', (
-            PluginMenuItem(
-                link='plugins:zenlenet:odoo',
-                link_text='客户 / 订单 / 出账',
-            ),
-        )),
-    ),
-)
+# The daily menu lives in Odoo. This module stays so NetBox does not add a second menu.
+menu = None

@@ -11,10 +11,10 @@ class TenantOdooLink(PluginTemplateExtension):
         name = quote(tenant.name)
         return (
             '<div class="card">'
-            '<div class="card-header">Odoo</div>'
+            '<div class="card-header">尊领</div>'
             '<div class="card-body">'
             f'<a class="btn btn-primary" href="/zenlenet/partner?name={name}">打开这个客户</a>'
-            '<p class="text-secondary mt-2 mb-0">订单、账单和割接通知在 Odoo。</p>'
+            '<p class="text-secondary mt-2 mb-0">订单、账单和割接通知在尊领。</p>'
             '</div></div>'
         )
 
