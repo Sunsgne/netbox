@@ -8,6 +8,7 @@ _spec.loader.exec_module(_naming)
 STATUS_TO_NETBOX = _naming.STATUS_TO_NETBOX
 slugify_name = _naming.slugify_name
 prefix_of = _naming.prefix_of
+unique_slug = _naming.unique_slug
 
 
 class NamingTests(unittest.TestCase):
@@ -21,6 +22,11 @@ class NamingTests(unittest.TestCase):
     def test_status_map(self):
         self.assertEqual(STATUS_TO_NETBOX['allocated'], 'active')
         self.assertEqual(STATUS_TO_NETBOX['free'], 'available')
+
+    def test_duplicate_ascii_slugs_get_a_suffix(self):
+        used = set()
+        self.assertEqual(unique_slug('SDWAN', used), 'sdwan')
+        self.assertEqual(unique_slug('sdwan自用', used), 'sdwan-2')
 
     def test_host_address_becomes_a_network(self):
         self.assertEqual(prefix_of(4, '193.239.155.0', 32), '193.239.155.0/24')

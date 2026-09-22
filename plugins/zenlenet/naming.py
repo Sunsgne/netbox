@@ -28,3 +28,15 @@ def slugify_name(name: str) -> str:
         return ascii_name[:80]
     digest = hashlib.sha1((name or '').encode()).hexdigest()[:12]
     return f'zl-{digest}'
+
+
+def unique_slug(name: str, used: set[str]) -> str:
+    base = slugify_name(name)[:90] or 'item'
+    slug = base
+    number = 2
+    while slug in used:
+        suffix = f'-{number}'
+        slug = f'{base[:100 - len(suffix)]}{suffix}'
+        number += 1
+    used.add(slug)
+    return slug

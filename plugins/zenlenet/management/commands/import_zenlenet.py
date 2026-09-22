@@ -14,7 +14,7 @@ from extras.models import CustomField, CustomFieldChoiceSet
 from ipam.models import IPAddress, Prefix
 from tenancy.models import Tenant, TenantGroup
 
-from zenlenet.naming import STATUS_TO_NETBOX, prefix_of, slugify_name
+from zenlenet.naming import STATUS_TO_NETBOX, prefix_of, unique_slug
 
 MARKER = 'zenlenet:'
 BATCH = 1000
@@ -113,36 +113,38 @@ class Command(BaseCommand):
 
     def _tenants(self, customers, group):
         found = {}
+        used = set(Tenant.objects.filter(group=group).values_list('slug', flat=True))
         for row in customers:
             name = (row['name'] or '')[:100]
             if not name:
                 continue
-            tenant, _ = Tenant.objects.get_or_create(
-                name=name,
-                group=group,
-                defaults={
-                    'slug': slugify_name(name),
-                    'description': (row['status'] or '')[:200],
-                    'comments': f'{MARKER}customer',
-                },
-            )
+            tenant = Tenant.objects.filter(name=name, group=group).first()
+            if tenant is None:
+                tenant = Tenant.objects.create(
+                    name=name,
+                    group=group,
+                    slug=unique_slug(name, used),
+                    description=(row['status'] or '')[:200],
+                    comments=f'{MARKER}customer',
+                )
             found[row['id']] = tenant
         return found
 
     def _sites(self, addresses):
         found = {}
+        used = set(Site.objects.values_list('slug', flat=True))
         for row in addresses:
             pop = (row['pop'] or '未标注')[:100]
             if pop in found:
                 continue
-            site, _ = Site.objects.get_or_create(
-                name=pop,
-                defaults={
-                    'slug': slugify_name(pop),
-                    'status': 'active',
-                    'comments': f'{MARKER}pop',
-                },
-            )
+            site = Site.objects.filter(name=pop).first()
+            if site is None:
+                site = Site.objects.create(
+                    name=pop,
+                    slug=unique_slug(pop, used),
+                    status='active',
+                    comments=f'{MARKER}pop',
+                )
             found[pop] = site
         return found
 
