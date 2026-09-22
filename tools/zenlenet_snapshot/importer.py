@@ -12,8 +12,8 @@ from datetime import date, datetime, timedelta
 import openpyxl
 from sqlalchemy import delete, func, select
 
-from app.db import SessionLocal, init_db
-from app.models import (
+from zenlenet_snapshot.db import SessionLocal, init_db
+from zenlenet_snapshot.models import (
     Circuit,
     Customer,
     Invoice,
@@ -25,7 +25,7 @@ from app.models import (
     TicketEvent,
     VxlanLink,
 )
-from app.parsing import (
+from zenlenet_snapshot.parsing import (
     classify_customer,
     clean_remark,
     dc_type_for,
@@ -701,9 +701,9 @@ def _refresh_customers(session) -> None:
 
 
 def _seed_tickets(session) -> int:
-    from app.content import TICKET_TYPES
-    from app.models import NoticeTemplate
-    from app.parsing import render_notice
+    from zenlenet_snapshot.content import TICKET_TYPES
+    from zenlenet_snapshot.models import NoticeTemplate
+    from zenlenet_snapshot.parsing import render_notice
 
     if session.scalar(select(func.count()).select_from(Ticket)):
         return 0

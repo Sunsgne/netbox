@@ -1,6 +1,0 @@
-data/
-*.db
-*.xlsx
-.env
-.venv/
-__pycache__/

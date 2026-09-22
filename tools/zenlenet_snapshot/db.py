@@ -11,7 +11,7 @@ from pathlib import Path
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from app.content import DEFAULT_PRICES, NOTICE_TEMPLATES
+from zenlenet_snapshot.content import DEFAULT_PRICES, NOTICE_TEMPLATES
 
 
 class Base(DeclarativeBase):
@@ -22,7 +22,7 @@ def database_path() -> Path:
     raw = os.environ.get("DATABASE_PATH")
     if raw:
         return Path(raw)
-    return Path(__file__).resolve().parents[1] / "data" / "zenlenet.db"
+    return Path("/tmp/zenlenet-snapshot.db")
 
 
 def _build_engine():
@@ -65,7 +65,7 @@ def init_db() -> None:
 
 
 def _seed_user(session) -> None:
-    from app.models import User
+    from zenlenet_snapshot.models import User
 
     if session.scalar(select(User).limit(1)):
         return
@@ -75,7 +75,7 @@ def _seed_user(session) -> None:
 
 
 def _seed_prices(session) -> None:
-    from app.models import Price
+    from zenlenet_snapshot.models import Price
 
     existing = {row.code for row in session.scalars(select(Price))}
     for code, name, amount in DEFAULT_PRICES:
@@ -84,7 +84,7 @@ def _seed_prices(session) -> None:
 
 
 def _seed_templates(session) -> None:
-    from app.models import NoticeTemplate
+    from zenlenet_snapshot.models import NoticeTemplate
 
     existing = {row.code for row in session.scalars(select(NoticeTemplate))}
     for code, name, scene, subject, body in NOTICE_TEMPLATES:
@@ -93,6 +93,6 @@ def _seed_templates(session) -> None:
 
 
 def price_map(session) -> dict[str, float]:
-    from app.models import Price
+    from zenlenet_snapshot.models import Price
 
     return {row.code: row.amount for row in session.scalars(select(Price))}
