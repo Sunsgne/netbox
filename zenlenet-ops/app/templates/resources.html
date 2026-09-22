@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}资源 · ZENLENET{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>资源</h1><div class="muted">{{ total }} 条地址。分配状态和网络属性沿用现有台账，不再铺开机柜、无线和固定资产。</div></div>
+  <div class="inline no-print">
+    <a class="btn" href="/resources/summary">按网段汇总</a>
+    <a class="btn" href="/resources/export?{{ keep() }}">导出</a>
+  </div>
+</div>
+<div class="chips">
+  <a class="{% if not status %}on{% endif %}" href="/resources?{{ keep(status='') }}">全部状态</a>
+  {% for key, label in STATUS_LABELS.items() %}
+  <a class="{% if status == key %}on{% endif %}" href="/resources?{{ keep(status=key) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+<div class="chips">
+  <a class="{% if not attr %}on{% endif %}" href="/resources?{{ keep(attr='') }}">全部网络</a>
+  <a class="{% if attr == '公网' %}on{% endif %}" href="/resources?{{ keep(attr='公网') }}">公网</a>
+  <a class="{% if attr == '内网' %}on{% endif %}" href="/resources?{{ keep(attr='内网') }}">内网</a>
+  <a class="{% if family == '4' %}on{% endif %}" href="/resources?{{ keep(family='4') }}">IPv4</a>
+  <a class="{% if family == '6' %}on{% endif %}" href="/resources?{{ keep(family='6') }}">IPv6</a>
+</div>
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="地址、客户、备注">
+  <select name="pop">
+    <option value="">全部地区</option>
+    {% for item in pops %}<option value="{{ item }}" {% if pop == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+  </select>
+  <select name="supplier">
+    <option value="">全部供应商</option>
+    {% for item in suppliers %}<option value="{{ item }}" {% if supplier == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+  </select>
+  <select name="dc_type">
+    <option value="">数据中心类型</option>
+    {% for item in dc_types %}<option value="{{ item }}" {% if dc_type == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+  </select>
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="hidden" name="attr" value="{{ attr }}">
+  <input type="hidden" name="family" value="{{ family }}">
+  <button class="btn primary" type="submit">筛选</button>
+</form>
+<form class="add-form no-print" method="post" action="/resources">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input name="cidr" placeholder="地址或网段，如 1.2.3.0/29" required>
+  <input name="pop" placeholder="地区" required>
+  <input name="supplier" placeholder="供应商">
+  <select name="role">{% for key, label in ROLE_LABELS.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
+  <select name="net_attr"><option>公网</option><option>内网</option></select>
+  <select name="dc_type">{% for item in dc_types %}<option>{{ item }}</option>{% endfor %}</select>
+  <input name="customer" list="customer-names" placeholder="客户（可空）">
+  <button class="btn primary" type="submit">添加</button>
+</form>
+<datalist id="customer-names">{% for name in names %}<option value="{{ name }}">{% endfor %}</datalist>
+<div class="table-wrap">
+  <table>
+    <tr><th>地址</th><th>地区</th><th>供应商</th><th>属性</th><th>状态</th><th>客户</th><th>到期</th><th></th></tr>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.display }}<div class="muted">{{ row.remark }}</div></td>
+      <td>{{ row.pop }}<div class="muted">{{ row.dc_type }}</div></td>
+      <td>{{ row.supplier }}</td>
+      <td>{{ row.net_attr }} · {{ ROLE_LABELS.get(row.role, row.role) }}{% if row.usage %}<div class="muted">{{ row.usage }}</div>{% endif %}</td>
+      <td><span class="pill st-{{ row.status }}">{{ STATUS_LABELS.get(row.status, row.status) }}</span></td>
+      <td>{% if row.customer %}<a href="/customers/{{ row.customer.id }}">{{ row.customer.name }}</a>{% endif %}</td>
+      <td>{{ row.expires_on or "" }}</td>
+      <td class="no-print">
+        {% if row.status != 'allocated' %}
+        <form method="post" action="/resources/{{ row.id }}/assign" class="inline">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <input name="customer" list="customer-names" placeholder="分配给">
+          <button class="btn" type="submit">分配</button>
+        </form>
+        {% else %}
+        <form method="post" action="/resources/{{ row.id }}/release">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn" type="submit">回收</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="muted">没有匹配的地址。</td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="pager">
+  {% if page > 1 %}<a href="/resources?{{ keep(page=page-1) }}">上一页</a>{% endif %}
+  <span class="muted">{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a href="/resources?{{ keep(page=page+1) }}">下一页</a>{% endif %}
+</div>
+{% endblock %}

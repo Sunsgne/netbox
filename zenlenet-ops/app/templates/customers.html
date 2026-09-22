@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}客户 · ZENLENET{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>客户</h1><div class="muted">共 {{ total }} 家。来自 IP 台账和在网订单，已去掉账号、密码类备注。</div></div>
+</div>
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="客户名称">
+  <select name="status">
+    <option value="">全部状态</option>
+    <option value="active" {% if status == 'active' %}selected{% endif %}>在网</option>
+    <option value="testing" {% if status == 'testing' %}selected{% endif %}>测试</option>
+    <option value="churned" {% if status == 'churned' %}selected{% endif %}>已退租</option>
+  </select>
+  <button class="btn primary" type="submit">筛选</button>
+</form>
+<div class="table-wrap">
+  <table>
+    <tr><th>客户</th><th>状态</th><th>在网订单</th><th>已分配地址</th></tr>
+    {% for row in rows %}
+    <tr>
+      <td><a href="/customers/{{ row.id }}">{{ row.name }}</a></td>
+      <td><span class="pill st-{{ row.status }}">{% if row.status == 'active' %}在网{% elif row.status == 'testing' %}测试{% else %}已退租{% endif %}</span></td>
+      <td>{{ stats[row.id].orders }}</td>
+      <td>{{ stats[row.id].ips }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">没有匹配的客户。</td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="pager">
+  {% if page > 1 %}<a href="/customers?{{ keep(page=page-1) }}">上一页</a>{% endif %}
+  <span class="muted">{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a href="/customers?{{ keep(page=page+1) }}">下一页</a>{% endif %}
+</div>
+{% endblock %}

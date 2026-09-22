@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}新建工单 · ZENLENET{% endblock %}
+{% block content %}
+<div class="top"><div><h1>新建工单</h1><div class="muted">时间按北京时间填写，正文里的 UTC 会自动减 8 小时。</div></div></div>
+<form class="panel stack" method="post" action="/tickets">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label>类型
+    <select name="type_code">
+      {% for code, label in TYPE_LABELS.items() %}<option value="{{ code }}">{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>客户
+    <select name="customer_id">
+      <option value="">不指定</option>
+      {% for customer in customers %}
+      <option value="{{ customer.id }}" {% if customer.id == customer_id %}selected{% endif %}>{{ customer.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>地区 / 节点<input name="pop" placeholder="HKG3 / LAX / SIN" required></label>
+  <label>影响范围<textarea name="impact" placeholder="受影响的 IP 段、专线或业务" required></textarea></label>
+  <label>原因
+    <select name="reason">{% for reason in reasons %}<option>{{ reason }}</option>{% endfor %}</select>
+  </label>
+  <label>预计影响时长<input name="duration" value="30分钟"></label>
+  <label>开始（北京时间）<input type="datetime-local" name="start" value="{{ start_value }}" required></label>
+  <label>结束（北京时间）<input type="datetime-local" name="end" value="{{ end_value }}" required></label>
+  <button class="btn primary" type="submit">生成通知并创建</button>
+</form>
+{% endblock %}

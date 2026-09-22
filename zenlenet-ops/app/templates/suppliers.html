@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}供应商 · ZENLENET{% endblock %}
+{% block content %}
+<div class="top"><div><h1>供应商</h1><div class="muted">采购只保留地址来源和退租记录，不再做库存和固定资产。</div></div></div>
+<div class="table-wrap">
+  <table>
+    <tr><th>供应商</th><th>地址数</th><th>已分配</th></tr>
+    {% for supplier, total, allocated in rows %}
+    <tr>
+      <td><a href="/resources?supplier={{ supplier }}">{{ supplier }}</a></td>
+      <td>{{ total }}</td>
+      <td>{{ allocated or 0 }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" class="muted">没有供应商。</td></tr>
+    {% endfor %}
+  </table>
+</div>
+<h2>退资源</h2>
+<div class="table-wrap">
+  <table>
+    <tr><th>供应商</th><th>资源</th><th>时间</th><th>备注</th></tr>
+    {% for row in returns %}
+    <tr>
+      <td>{{ row.supplier }}</td>
+      <td>{{ row.resource }}</td>
+      <td>{{ row.when_text }}</td>
+      <td>{{ row.note }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">没有退资源记录。</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

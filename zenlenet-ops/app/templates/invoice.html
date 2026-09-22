@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ invoice.number }} · ZENLENET{% endblock %}
+{% block content %}
+<div class="invoice-head">
+  <div>
+    <div class="muted">ZENLENET PTE. LTD. · UEN 202326370G</div>
+    <h1>{{ invoice.number }}</h1>
+    <div>客户：<a href="/customers/{{ invoice.customer.id }}">{{ invoice.customer.name }}</a></div>
+    <div class="muted">账期 {{ invoice.period }} · USD · 演示账单，不作为正式结算依据</div>
+  </div>
+  <div>
+    <div class="muted">合计</div>
+    <div class="total">{{ invoice.total|money }}</div>
+    <span class="pill st-{{ invoice.status }}">{{ INVOICE_STATUS.get(invoice.status, invoice.status) }}</span>
+  </div>
+</div>
+<div class="inline no-print" style="margin-top:12px">
+  <form method="post" action="/billing/{{ invoice.id }}/status">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="btn" name="action" value="prev" type="submit">退回上一步</button>
+    <button class="btn primary" name="action" value="next" type="submit">推进：确认 / 发送 / 收款</button>
+  </form>
+  <button class="btn" type="button" onclick="window.print()">打印</button>
+</div>
+<div class="table-wrap">
+  <table>
+    <tr><th>项目</th><th>数量</th><th>单价</th><th>金额</th></tr>
+    {% for line in invoice.lines %}
+    <tr>
+      <td>{{ line.description }}</td>
+      <td>{{ line.qty|money }}</td>
+      <td>{{ line.unit_price|money }}</td>
+      <td>{{ line.amount|money }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

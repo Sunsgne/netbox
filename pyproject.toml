@@ -208,6 +208,7 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
+    "zenlenet-ops",
 ]
 
 # Enforce line length and indent-width

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ ticket.key }} · ZENLENET{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <div class="muted">{{ ticket.key }} · {{ TYPE_LABELS.get(ticket.type_code, ticket.type_code) }} · {{ ticket.assignee }}</div>
+    <h1>{{ ticket.title }}</h1>
+    <div class="muted">
+      {% if ticket.customer %}<a href="/customers/{{ ticket.customer.id }}">{{ ticket.customer.name }}</a> · {% endif %}
+      {{ ticket.pop }}
+      {% if ticket.window_start %} · 北京时间 {{ ticket.window_start.strftime('%Y-%m-%d %H:%M') }}{% if ticket.window_end %} 至 {{ ticket.window_end.strftime('%H:%M') }}{% endif %}{% endif %}
+    </div>
+  </div>
+</div>
+<div class="pipeline">
+  {% for code, label in TICKET_STEPS %}
+  <span class="{% if ticket.status == code %}now{% elif step_index > loop.index0 %}done{% endif %}">{{ label }}</span>
+  {% endfor %}
+  {% if ticket.status == 'cancelled' %}<span class="now">已取消</span>{% endif %}
+</div>
+<form method="post" action="/tickets/{{ ticket.id }}">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label class="stack">主题<input name="subject" value="{{ ticket.subject }}"></label>
+  <p></p>
+  <textarea class="notice" id="notice" name="body">{{ ticket.body }}</textarea>
+  <p class="inline no-print">
+    <button class="btn" type="submit" name="action" value="prev">退回</button>
+    <button class="btn" type="submit" name="action" value="save">保存正文</button>
+    <button class="btn primary" type="submit" name="action" value="next">推进到下一步</button>
+    <button class="btn" type="button" onclick="navigator.clipboard.writeText(document.getElementById('notice').value)">复制通知</button>
+  </p>
+  <label class="stack">备注<textarea name="comment" placeholder="评审意见、客户回复、恢复确认"></textarea></label>
+  <p class="no-print"><button class="btn" type="submit" name="action" value="cancel">取消工单</button></p>
+</form>
+<h2>记录</h2>
+<div class="table-wrap">
+  <table>
+    {% for event in ticket.events|sort(attribute='id') %}
+    <tr>
+      <td>{{ event.created_at.strftime('%m-%d %H:%M') }}</td>
+      <td>{{ event.author }}</td>
+      <td>{{ event.action }}</td>
+      <td>{{ event.body }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

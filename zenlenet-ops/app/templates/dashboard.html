@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}总览 · ZENLENET{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>总览</h1>
+    <div class="muted">今天 {{ today }}。在网业务按演示价目估算月租，正式合同价仍以订单约定为准。</div>
+  </div>
+  <a class="btn primary no-print" href="/tickets/new">新建割接 / 维护</a>
+</div>
+<section class="cards">
+  <div class="card"><span class="muted">IP 地址</span><b>{{ address_total }}</b><span class="muted">已分配 {{ by_status.get('allocated', 0) }}</span></div>
+  <div class="card"><span class="muted">客户</span><b>{{ customers }}</b><span class="muted">在网 {{ active_customers }}</span></div>
+  <div class="card"><span class="muted">在网月租（USD）</span><b>{{ mrr|money }}</b><span class="muted">演示价目</span></div>
+  <div class="card"><span class="muted">未关闭工单</span><b>{{ open_tickets }}</b><span class="muted">割接与维护</span></div>
+</section>
+<div class="split">
+  <section>
+    <h2>节点占用</h2>
+    <div class="panel">
+      {% for item in pop_bars %}
+      <div class="pop-row">
+        <span>{{ item.pop }}</span>
+        <div class="bar"><span style="width: {{ item.pct }}%"></span></div>
+        <span class="muted">{{ item.pct }}%</span>
+      </div>
+      {% else %}
+      <p class="muted">还没有资源。把三份台账放到服务器后执行导入命令。</p>
+      {% endfor %}
+    </div>
+    <h2>进行中的工单</h2>
+    <div class="table-wrap">
+      <table>
+        <tr><th>单号</th><th>类型</th><th>标题</th><th>状态</th></tr>
+        {% for ticket in tickets %}
+        <tr>
+          <td><a href="/tickets/{{ ticket.id }}">{{ ticket.key }}</a></td>
+          <td>{{ TYPE_LABELS.get(ticket.type_code, ticket.type_code) }}</td>
+          <td>{{ ticket.title }}</td>
+          <td><span class="pill st-{{ ticket.status }}">{{ STEP_LABELS.get(ticket.status, ticket.status) }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="muted">没有未完成的工单。</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </section>
+  <section>
+    <h2>45 天内到期</h2>
+    <div class="table-wrap">
+      <table>
+        <tr><th>地址</th><th>客户</th><th>日期</th></tr>
+        {% for row in expiring %}
+        <tr>
+          <td>{{ row.display }}</td>
+          <td>{% if row.customer %}<a href="/customers/{{ row.customer.id }}">{{ row.customer.name }}</a>{% endif %}</td>
+          <td>{{ row.expires_on }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="muted">这个窗口里没有写明到期日的地址。</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
