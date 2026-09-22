@@ -1,7 +1,7 @@
 from netbox.plugins import PluginMenu, PluginMenuItem
 
 menu = PluginMenu(
-    label='业务',
+    label='ZENLENET',
     icon_class='mdi mdi-briefcase-outline',
     groups=(
         ('Odoo', (

@@ -1,6 +1,7 @@
 """Pure helpers shared by the NetBox loader."""
 
 import hashlib
+import ipaddress
 import re
 
 STATUS_TO_NETBOX = {
@@ -11,6 +12,14 @@ STATUS_TO_NETBOX = {
     'returning': 'returning',
     'internal': 'internal',
 }
+
+
+def prefix_of(version, address, prefixlen) -> str:
+    if int(version) == 4 and int(prefixlen) == 32:
+        raw = '.'.join(str(address).split('.')[:3]) + '.0/24'
+    else:
+        raw = f'{address}/{prefixlen}'
+    return str(ipaddress.ip_network(raw, strict=False))
 
 
 def slugify_name(name: str) -> str:

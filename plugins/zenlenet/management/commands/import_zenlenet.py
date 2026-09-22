@@ -14,7 +14,7 @@ from extras.models import CustomField, CustomFieldChoiceSet
 from ipam.models import IPAddress, Prefix
 from tenancy.models import Tenant, TenantGroup
 
-from zenlenet.naming import STATUS_TO_NETBOX, slugify_name
+from zenlenet.naming import STATUS_TO_NETBOX, prefix_of, slugify_name
 
 MARKER = 'zenlenet:'
 BATCH = 1000
@@ -149,7 +149,7 @@ class Command(BaseCommand):
     def _prefixes(self, addresses, sites, tenants):
         buckets = {}
         for row in addresses:
-            prefix = _prefix_of(row['version'], row['address'], row['prefixlen'])
+            prefix = prefix_of(row['version'], row['address'], row['prefixlen'])
             pop = row['pop'] or '未标注'
             buckets.setdefault(prefix, {
                 'pop': pop,
@@ -243,12 +243,6 @@ class Command(BaseCommand):
             )
             created += 1
         return created
-
-
-def _prefix_of(version, address, prefixlen):
-    if int(version) == 4 and int(prefixlen) == 32:
-        return '.'.join(address.split('.')[:3]) + '.0/24'
-    return f'{address}/{prefixlen}'
 
 
 def _unique_cid(raw, used):
