@@ -10,5 +10,5 @@ class FrontDoorMiddleware:
     def __call__(self, request):
         accept = request.META.get('HTTP_ACCEPT', '')
         if request.method == 'GET' and request.path == '/' and 'text/html' in accept:
-            return HttpResponseRedirect('/odoo')
+            return HttpResponseRedirect('/obss')
         return self.get_response(request)

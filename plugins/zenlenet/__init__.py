@@ -11,7 +11,7 @@ class ZenlenetConfig(PluginConfig):
     base_url = 'zenlenet'
     min_version = '4.7.0'
     default_settings = {
-        'odoo_path': '/odoo',
+        'obss_path': '/obss',
     }
 
     def ready(self):
@@ -45,7 +45,7 @@ class ZenlenetConfig(PluginConfig):
             menu_mod.get_menus.cache_clear()
         nav_tags.get_menus = trimmed
         from django.conf import settings
-        settings.BANNER_TOP = '<a href="/odoo">返回尊领</a>'
+        settings.BANNER_TOP = '<a href="/obss">返回尊领</a>'
 
 
 config = ZenlenetConfig

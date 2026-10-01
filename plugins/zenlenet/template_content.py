@@ -3,7 +3,7 @@ from urllib.parse import quote
 from netbox.plugins import PluginTemplateExtension
 
 
-class TenantOdooLink(PluginTemplateExtension):
+class TenantObssLink(PluginTemplateExtension):
     models = ['tenancy.tenant']
 
     def right_page(self):
@@ -19,4 +19,4 @@ class TenantOdooLink(PluginTemplateExtension):
         )
 
 
-template_extensions = [TenantOdooLink]
+template_extensions = [TenantObssLink]
